@@ -1,37 +1,68 @@
-GBE (Gstack BOSH Environment) & Easy Foundry
+Turbine infra CLI
 ============================================
 
-### GBE
+### Turbine Framework
 
-GBE is a set of tools and conventions that establish best practice for
-managing “infrastructure as code”, through the _description_ of an expected
-infrastructure state, and _convergence_ towards that state.
+Turbine is a set of tools and conventions that establish best practice for
+managing “infrastructure as code” in a Cloud Computing context. A set of
+Turbine conventions help you to _describe_ the Cloud infrastructure resources
+you need. Then a CLI helps you to _converge_ these resources to their expected
+state. “_Converging to an expected state_” means both creating your
+infrastructure from scratch, apply any evolution over time, like configuration
+changes or scale in/out, and decommission anything that needs to be destroyed.
 
-GBE is a **convergent infrastructure framework** if you like, where the idea
-of “converging” infrastructure embraces both initial deployment and any
-further updates or upgrades. It's a solution for both day 1 and day 2
-concerns.
 
-### Easy Foundry
+Concepts
+--------
 
-_Easy Foundry_ is a GBE-based distribution of Cloud Foundry. It's 100% Open
-Source. By “_distribution_”, we mean a set of [infrastructure modules](./docs/components.md)
-around Cloud Foundry that are consistently glued together to provide usable
-features. Those modules can be opted-in or out, whenever necessary, and
-declare other modules they depend on. You can think of GBE like a package
-manager for deploying distributed systems.
+### Cloud infrastructure as code (IaC)
 
-One of the main design goals of Easy Foundry is to have minimal coupling with
-proprietary Cloud services, and thus reduce the risk of being tied with any
-Cloud Provider. This preserves Easy Foundry adopters freedom to chose the
-provider they want, and still being free to switch whenever necessary.
+In the context of Cloud Computing, IT infrastructure is a set of resources
+created in the Cloud. Current best practice leads you towards those requirements:
+
+1. Describe those infrastructure resources in their desired state (e.g. in
+   some YAML files, or through some DSL syntax).
+
+2. Track the history of this description (e.g. in a Git repository).
+
+3. Persist the known state of the managed Cloud resources, inlcuding handles
+   like unique identifiers in the Cloud.
+
+4. Persist secrets like passwords and private keys in some secure encrypted
+   storage.
+
+
+### Converging Cloud infrastructure
+
+Converging Cloud infrastructure resources either embraces prototyping (day 0),
+creating an initial deployment (day 1), deploying any further updates or
+upgrades (day 2), or decommissioning (day Z). In particular, Turbine brings
+solutions for both day 1 and day 2 concerns.
+
+
+### Distributing standard infrastructure descriptions
+
+Ship standard descriptions and possible variants.
+
+
+### Follow a distribution
+
+1. Describe customizations that apply to some description of a standard
+   infrastructure, comming from an upstream distribution.
+
+2. Pin a specific version of an upstream distribution.
+
+3. Track history of the customizations
+
+4. Be able to rebase customizations on top of a new version of the upstream
+   distribution.
 
 
 
 Overall picture
 ---------------
 
-GBE brings a solution to several separate concerns:
+Turbine brings a solution to several separate concerns:
 
 1. Bootstrap a BOSH environment. This is mainly about creating a BOSH server,
    properly configured to pilot some _automated infrastructure_*. Here we
@@ -85,10 +116,10 @@ We address several deployment modes that are worth being explained.
 
 ### Support status
 
-#### `gbe up`-based environments
+#### `infra up`-based environments
 
-Infrastructure     | Topology   | System | Status             | GBE Flavor
--------------------|------------|--------|--------------------|------------
+Infrastructure     | Topology   | System | Status             | Turbine Flavor
+-------------------|------------|--------|--------------------|---------------
 Bare-Metal server  | Single VM  | Linux  | Supported          | `ddbox`
 Bare-Metal server  | Hybrid VMs | Linux  | Actively supported | `ddbox`
 Bare-Metal server  | Multi VMs  | Linux  | Not planned        | `ddbox`
@@ -124,9 +155,9 @@ Basically, you need to:
 
 1. Check some prerequisites.
 
-2. `gbe up` for converging the base infrastructure environment.
+2. `infra up` for converging the base infrastructure environment.
 
-3. `gbe converge` for converging [infrastructure modules](./docs/components.md)
+3. `infra converge` for converging [infrastructure modules](./docs/components.md)
    or application deployments.
 
 
@@ -146,14 +177,14 @@ chapter of the documentation.
 Documentation
 -------------
 
-The `gbe` CLI provides inline help with `gbe help`. And generally, help on a
-given command can be obtained with `gbe <command> -h`.
+The `infra` CLI provides inline help with `infra help`. And generally, help on a
+given command can be obtained with `infra <command> -h`.
 
 Other documentations are available in the [docs](./docs/) directory:
 
-- [GBE Command Line Interface workflow](./docs/cli-workflow.md)
-- [GBE Command Line Interface reference](./docs/cli-reference.md)
-- [GBE file structure reference](./docs/gbe-structure-reference.md)
+- [Turbine Command Line Interface workflow](./docs/cli-workflow.md)
+- [Turbine Command Line Interface reference](./docs/cli-reference.md)
+- [Turbine file structure reference](./docs/turbine-structure-reference.md)
 - [Troubleshooting Guide](./docs/troubleshooting.md)
 
 
