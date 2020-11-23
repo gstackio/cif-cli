@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+
+BASE_DIR=$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")
+SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
+
+source "$BASE_DIR/lib/turbine/colors.inc.bash"
+
+function main() {
+    case "$1" in
+        -h)
+            usage; return 0 ;;
+        init)
+            shift
+            case $1 in
+                -h) init_usage; return 0 ;;
+                *)  turbine_init "$@" ;;
+            esac
+            ;;
+        bump)
+            echo "Not yet implemented" >&2
+            ;;
+        subsys)
+            shift
+            case "$1" in
+                -h)
+                    subsys_usage; return 0 ;;
+                add)
+                    shift
+                    local subsys_name="$1"
+                    if [[ -z ${subsys_name} ]]; then
+                        subsys_usage
+                        return 2
+                    fi
+                    turbine_subsys_add "${subsys_name}"
+                    ;;
+                *)
+                    subsys_usage; return 2 ;;
+            esac
+            ;;
+        *)
+            usage; return 2 ;;
+    esac
+}
+
+function usage() {
+    echo "Turbine framework CLI"
+    echo "  init         Initialize a new Turbine project directory"
+    echo "  bump         Bump the Turbine CLI inside an existing Turbine project directory"
+    echo "  subsys add   Add a new subsystem to an existing Turbine project directory"
+}
+
+function init_usage() {
+    local ul="${UNDERLINE}"
+    local noul="${NOUNDERLINE}"
+    echo "Usage:"
+    echo "  ${ul}${SCRIPT_NAME}${noul}  ${ul}init${noul}  <infra-name>"
+    echo
+    echo "    <infra-name>   A name for base Turbine environment to create"
+    echo
+    echo "Initialize a new Turbine project directory."
+}
+
+function subsys_usage() {
+    local ul="${UNDERLINE}"
+    local noul="${NOUNDERLINE}"
+    echo "Usage:"
+    echo "  ${ul}${SCRIPT_NAME}${noul}  ${ul}subsys${noul}  add  <subsys-name>"
+    echo
+    echo "    <subsys-name>   A name for the new subsystem to scaffold"
+    echo
+    echo "Add a new subsystem to an existing Turbine project directory."
+}
+
+function turbine_init() {
+    local infra_name=$1
+    local BASE_DIR="${PWD}"
+
+    mkdir -p "${BASE_DIR}"/{.cache/resources,bin,lib,src}
+    git init "${BASE_DIR}"
+    cat >> "${BASE_DIR}/.gitignore" <<EOF
+EOF
+    if [[ -d "${BASE_DIR}/.cache/turbine-cli" ]]; then
+        pushd "${BASE_DIR}/.cache/turbine-cli" > /dev/null
+        git pull
+        popd > /dev/null
+    else
+        git clone "https://github.com/gstackio/turbine-cli.git" \
+            "${BASE_DIR}/.cache/turbine-cli"
+    fi
+    ln -sfn "../.cache/turbine-cli/bin/infra" "${BASE_DIR}/bin/"
+    ln -sfn "../.cache/turbine-cli/bin/turbine" "${BASE_DIR}/bin/"
+    if [[ ! -f "${BASE_DIR}/versions.yml" ]]; then
+        echo "---" > "${BASE_DIR}/versions.yml"
+    fi
+    yq write "${BASE_DIR}/versions.yml" "turbine-cli" "master"
+
+    local turbine_environment="${infra_name}-env"
+    turbine_subsys_add "${turbine_environment}" "."
+    cat >> "${BASE_DIR}/.envrc" <<EOF
+PATH_add bin
+
+export TURBINE_ENVIRONMENT="${turbine_environment}"
+EOF
+    turbine_subsys_add "cloud-config" "${turbine_environment}"
+    turbine_subsys_add "runtime-config" "${turbine_environment}"
+}
+
+function turbine_subsys_add() {
+    local subsys_name="$1"
+    local subsys_dir=${2:-"deployments"}
+
+    echo "INFO: creating subsys '${subsys_name}' in '${subsys_dir}/'."
+
+    local subsys_type  differentiator  default_config_vars  default_imported_vars
+    default_config_vars=" {}"
+    default_imported_vars=" {}"
+    if [[ ${subsys_name} = *-config ]]; then
+        subsys_type="bosh-config"
+        differentiator="config"
+    elif [[ ${subsys_name} = *-env ]]; then
+        subsys_type="bosh-environment"
+        differentiator="deployment"
+    else
+        subsys_type="bosh-deployment"
+        differentiator="deployment"
+        default_config_vars="
+  deployment_name: easyfoundry-${subsys_name}
+
+
+  # Versions
+
+  ${subsys_name}_version: ""
+  ${subsys_name}_sha1: ~
+
+  # stemcell_os:      # imported below
+  # stemcell_version: # imported below
+
+
+  # Reference declarations
+
+  network_name: ${subsys_name}-network
+"
+        default_imported_vars="
+  - subsys: cf
+    imports:
+
+      # Versions
+
+      - name: stemcell_os
+        from: depl-vars
+        path: /stemcell_os
+      - name: stemcell_version
+        from: depl-vars
+        path: /stemcell_version
+"
+    fi
+
+    mkdir -p "${BASE_DIR}/${subsys_dir}/${subsys_name}"/{conf,features}
+
+    spec_file="${BASE_DIR}/${subsys_dir}/${subsys_name}/conf/spec.yml"
+    spec_file_display=${spec_file/#${PWD}\//}
+
+    if [[ -f ${spec_file} ]]; then
+        echo "WARNING: file '${spec_file_display}' already exists. Skipping."
+    else
+        echo "INFO: Creating '${spec_file_display}'"
+        cat > "${spec_file}" << EOF
+---
+subsys:
+  name: ${subsys_name}
+  type: ${subsys_type}
+
+input_resources: []
+
+
+main_${differentiator}_file: ~
+
+
+operations_files: {}
+
+variables_files: {}
+
+
+${differentiator}_vars:${default_config_vars}
+
+
+imported_vars:${default_imported_vars}
+EOF
+    fi
+}
+
+main "$@"
