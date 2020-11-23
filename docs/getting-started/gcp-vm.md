@@ -127,7 +127,7 @@ that we target the `gcp` environment.
 Finally, we need to reload the updated environment variables.
 
 ```bash
-export GBE_ENVIRONMENT=gcp-env
+export TURBINE_ENVIRONMENT=gcp-env
 source <(./bin/gbe env)  # add 'gbe' to our $PATH
 gbe up
 source <(./bin/gbe env)  # reload the updated environment variables

@@ -27,9 +27,9 @@ When you need to debug a `bosh create-env` issue in `gbe up`, you can run GBE
 with the `GBE_DEBUG_LEVEL=1` in your environment.
 
     $ GBE_DEBUG_LEVEL=1 gbe up
-    $ less "./state/${GBE_ENVIRONMENT:-ddbox-env}/bosh-create-env.log"
+    $ less "./state/${TURBINE_ENVIRONMENT:-ddbox-env}/bosh-create-env.log"
 
 Then you'll find the `bosh create-env` debug logs in
-`./state/${GBE_ENVIRONMENT}/bosh-create-env.log`. These logs a hundreds of MB
+`./state/${TURBINE_ENVIRONMENT}/bosh-create-env.log`. These logs a hundreds of MB
 wide, so be careful to remove them first when you need to SCP your state
 directory to another machine.

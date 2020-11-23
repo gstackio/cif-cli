@@ -8,7 +8,7 @@ function env_depl_var() {
     fi
 
     local depl_var_name=$1
-    spec_var ${required:+--required} "/deployment_vars/$depl_var_name" "$BASE_DIR/$GBE_ENVIRONMENT"
+    spec_var ${required:+--required} "/deployment_vars/$depl_var_name" "$BASE_DIR/$TURBINE_ENVIRONMENT"
 }
 
 function yaml_upsert_file_content() {
@@ -48,7 +48,7 @@ function pre_create_env_hook() {
     echo -e "\n${BLUE}Provisionning ${BOLD}dedibox${RESET} with pre-requisites for the Virtualbox infrastructure\n"
 
     echo skipped
-    # pushd $BASE_DIR/$GBE_ENVIRONMENT/provision
+    # pushd $BASE_DIR/$TURBINE_ENVIRONMENT/provision
     #     ansible-playbook -i inventory.cfg --ask-become provision.yml
     # popd
 
@@ -69,7 +69,7 @@ function pre_create_env_hook() {
         local ssh_key_base_filename="${SUBSYS_DIR}/conf/id_rsa"
         if [[ ! -f "${ssh_key_base_filename}" ]]; then
             local env_name
-            env_name=$(spec_var "/subsys/name" "${BASE_DIR}/${GBE_ENVIRONMENT}")
+            env_name=$(spec_var "/subsys/name" "${BASE_DIR}/${TURBINE_ENVIRONMENT}")
             ssh-keygen -b 4096 -N "" -C "boshinit@${env_name}" \
                 -f "${ssh_key_base_filename}"
             chmod 600 "${ssh_key_base_filename}"
@@ -127,7 +127,7 @@ function setup_firewall_hook() {
     fi
 
     local vm_cid nic_num
-    vm_cid=$(jq -r .current_vm_cid "$(state_dir "$GBE_ENVIRONMENT")/env-infra-state.json")
+    vm_cid=$(jq -r .current_vm_cid "$(state_dir "$TURBINE_ENVIRONMENT")/env-infra-state.json")
     nic_num=$($vboxmanage showvminfo "$vm_cid" | sed -ne 's/^NIC \([0-9]\{1,\}\):.* Attachment: NAT,.*/\1/p')
 
     function locate_nat_rule() {

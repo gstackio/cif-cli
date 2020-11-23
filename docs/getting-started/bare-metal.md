@@ -126,24 +126,24 @@ server VM. Before that, we make sure that we target the
 Finally, we need to reload the updated environment variables.
 
 ```bash
-export GBE_ENVIRONMENT=ddbox-standalone-bosh-env
+export TURBINE_ENVIRONMENT=ddbox-standalone-bosh-env
 source <(./bin/gbe env)  # add 'gbe' to our $PATH
-GBE_ENVIRONMENT=ddbox-standalone-garden-env gbe up # may ask you a password if you don't have any SSH key access yet
+TURBINE_ENVIRONMENT=ddbox-standalone-garden-env gbe up # may ask you a password if you don't have any SSH key access yet
 cp -p ddbox-standalone-garden-env/conf/id_rsa* \
       ddbox-standalone-bosh-env/conf/ # use the same SSH key for both envs
 gbe up
 source <(./bin/gbe env)  # reload the updated environment variables
-GBE_ENVIRONMENT=ddbox-standalone-garden-env gbe routes
+TURBINE_ENVIRONMENT=ddbox-standalone-garden-env gbe routes
 ```
 
 As an alternative, we could run the compound `base-env` Makefile target.
 
 ```bash
-export GBE_ENVIRONMENT=ddbox-standalone-bosh-env
+export TURBINE_ENVIRONMENT=ddbox-standalone-bosh-env
 source <(./bin/gbe env)
 make base-env
 source <(./bin/gbe env)
-GBE_ENVIRONMENT=ddbox-standalone-garden-env gbe routes
+TURBINE_ENVIRONMENT=ddbox-standalone-garden-env gbe routes
 ```
 
 If necessary, `gbe up` will install the supported versions of

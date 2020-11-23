@@ -43,7 +43,7 @@ function run_hook() {
         "the '$BOLD${inferred_subsys_name}$RESET' subsystem.\n"
 
     export BASE_DIR
-    export GBE_ENVIRONMENT
+    export TURBINE_ENVIRONMENT
     export SUBSYS_DIR
     "$script" "$@"
     return $? # to make it obvious that we want the exit status to propagate

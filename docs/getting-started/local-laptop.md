@@ -78,7 +78,7 @@ that we target the `ddbox` environment.
 Finally, we need to reload the updated environment variables.
 
 ```bash
-export GBE_ENVIRONMENT=ddbox-env
+export TURBINE_ENVIRONMENT=ddbox-env
 source <(./bin/gbe env)  # add 'gbe' to our $PATH
 gbe up
 source <(./bin/gbe env)  # reload the updated environment variables

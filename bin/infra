@@ -7,21 +7,21 @@ readonly BASE_DIR
 
 # White-labeling settings
 SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
-project_name=GBE
-project_desc="Gstack BOSH Environment"
+project_name="Turbine"
+project_desc="Turbine infra CLI"
 
 if ! echo "$PATH" | tr : '\n' | grep -q "^$BASE_DIR/bin$"; then
     # update PATH is not already done by direnv
     PATH=$BASE_DIR/bin:$PATH
 fi
 
-source "$BASE_DIR/lib/gbe/colors.inc.bash"
-source "$BASE_DIR/lib/gbe/spec.inc.bash"
-source "$BASE_DIR/lib/gbe/tunnel.inc.bash"
-source "$BASE_DIR/lib/gbe/compiled-releases.inc.bash"
-source "$BASE_DIR/lib/gbe/dns.inc.bash"
-source "$BASE_DIR/lib/gbe/external-utilities.inc.bash"
-source "$BASE_DIR/lib/gbe/hooks.inc.bash"
+source "$BASE_DIR/lib/turbine/colors.inc.bash"
+source "$BASE_DIR/lib/turbine/spec.inc.bash"
+source "$BASE_DIR/lib/turbine/tunnel.inc.bash"
+source "$BASE_DIR/lib/turbine/compiled-releases.inc.bash"
+source "$BASE_DIR/lib/turbine/dns.inc.bash"
+source "$BASE_DIR/lib/turbine/external-utilities.inc.bash"
+source "$BASE_DIR/lib/turbine/hooks.inc.bash"
 
 function pushd() {
     command pushd "$@" > /dev/null || exit 115
@@ -75,7 +75,7 @@ function env_exports() {
 
     echo "export PATH=$PATH"
 
-    local env_creds=$(state_dir "$GBE_ENVIRONMENT")/depl-creds.yml
+    local env_creds=$(state_dir "$TURBINE_ENVIRONMENT")/depl-creds.yml
     if [[ ! -f "$env_creds" ]]; then
         return
     fi
@@ -89,8 +89,8 @@ function env_exports() {
     local ca_cert admin_password jumpbox_private_key env_alias depl_name
     ca_cert=$(env_creds_var /default_ca/ca)
     admin_password=$(env_creds_var /admin_password)
-    jumpbox_private_key=$(state_dir "$GBE_ENVIRONMENT")/jumpbox.key
-    env_alias=$(spec_var --required /infra_vars/alias "$BASE_DIR/$GBE_ENVIRONMENT")
+    jumpbox_private_key=$(state_dir "$TURBINE_ENVIRONMENT")/jumpbox.key
+    env_alias=$(spec_var --required /infra_vars/alias "$BASE_DIR/$TURBINE_ENVIRONMENT")
     echo "export BOSH_CA_CERT=\"$ca_cert\""
     echo "export BOSH_CLIENT=admin"
     echo "export BOSH_CLIENT_SECRET=\"$admin_password\""
@@ -107,7 +107,7 @@ function env_exports() {
     fi
 
     echo "export CREDHUB_SERVER=\"https://$(internal_ip):8844\""
-    local credhub_ca_cert=$(state_dir "$GBE_ENVIRONMENT")/credhub_CAs.pem
+    local credhub_ca_cert=$(state_dir "$TURBINE_ENVIRONMENT")/credhub_CAs.pem
     echo "export CREDHUB_CA_CERT=\"${credhub_ca_cert}\""
     {
         env_creds_var "/credhub_ca/certificate"
@@ -119,14 +119,14 @@ function env_exports() {
 }
 
 function credhub_login() {
-    local creds=$(state_dir "$GBE_ENVIRONMENT")/depl-creds.yml
+    local creds=$(state_dir "$TURBINE_ENVIRONMENT")/depl-creds.yml
 
-    if [[ ! -f "$creds" || ! -f "$(state_dir "$GBE_ENVIRONMENT")/env-infra-state.json" ]]; then
+    if [[ ! -f "$creds" || ! -f "$(state_dir "$TURBINE_ENVIRONMENT")/env-infra-state.json" ]]; then
         return
     fi
 
     export CREDHUB_SERVER=https://$(internal_ip):8844
-    export CREDHUB_CA_CERT=$(state_dir "$GBE_ENVIRONMENT")/credhub_CAs.pem
+    export CREDHUB_CA_CERT=$(state_dir "$TURBINE_ENVIRONMENT")/credhub_CAs.pem
     (
         bosh int "$creds" --path /credhub_ca/certificate
         bosh int "$creds" --path /default_ca/certificate
@@ -142,10 +142,10 @@ function setup_gcp() {
     local service_account_name=$1
     local project_id=$2
 
-    local service_account_key=$BASE_DIR/$GBE_ENVIRONMENT/conf/gcp-service-account.key.json
+    local service_account_key=$BASE_DIR/$TURBINE_ENVIRONMENT/conf/gcp-service-account.key.json
     if [[ -f $service_account_key ]]; then
         echo -e "INFO: the 'gcp-service-account.key.json' credentials file" \
-            "already exists in directory '$BASE_DIR/$GBE_ENVIRONMENT/conf/'. ${BLUE}Skipping${RESET}."
+            "already exists in directory '$BASE_DIR/$TURBINE_ENVIRONMENT/conf/'. ${BLUE}Skipping${RESET}."
         return 0
     fi
 
@@ -168,15 +168,15 @@ function setup_gcp() {
     if [[ -z $initial_errexit ]]; then set +e; fi
 
     local temp_file=$(mktemp)
-    sed -e "s/^  project_id:.*$/project_id: $project_id/" "$BASE_DIR/$GBE_ENVIRONMENT/conf/spec.yml" > "$temp_file"
-    cp "$temp_file" "$BASE_DIR/$GBE_ENVIRONMENT/conf/spec.yml"
+    sed -e "s/^  project_id:.*$/project_id: $project_id/" "$BASE_DIR/$TURBINE_ENVIRONMENT/conf/spec.yml" > "$temp_file"
+    cp "$temp_file" "$BASE_DIR/$TURBINE_ENVIRONMENT/conf/spec.yml"
     rm "$temp_file"
 
     echo -e "$GREEN${BOLD}OK$RESET"
 }
 
 function usage() {
-    echo "$project_name ($project_desc) CLI"
+    echo "${project_desc}"
     echo "  $BOLD${MAGENTA}SETUP:$RESET"
     echo "  env         Sourceable envrionment variables for CLI clients"
     echo "  gcp         Configures the Google Cloud credentials"
@@ -299,7 +299,7 @@ function ssh_usage() {
     echo "Examples:"
     echo "  $ gbe ssh"
     echo "  $ gbe ssh df -h /var/vcap/store"
-    echo "  $ GBE_ENVIRONMENT=ddbox-standalone-garden-env gbe ssh df -h"
+    echo "  $ TURBINE_ENVIRONMENT=ddbox-standalone-garden-env gbe ssh df -h"
     echo
 }
 
@@ -500,7 +500,7 @@ function ensure_reachability() {
 
 function add_routes() {
     local network_cidr platform netstat_pattern sudo_cmd
-    network_cidr=$(spec_var /deployment_vars/routable_network_cidr "$BASE_DIR/$GBE_ENVIRONMENT" | sed -e 's/^null$//')
+    network_cidr=$(spec_var /deployment_vars/routable_network_cidr "$BASE_DIR/$TURBINE_ENVIRONMENT" | sed -e 's/^null$//')
     if [[ -z $network_cidr ]]; then
         return
     fi
@@ -546,7 +546,7 @@ function add_routes() {
 function update_config() {
     local cfg_type=$1; shift # 'cloud' or 'runtime'
 
-    SUBSYS_DIR=$BASE_DIR/$GBE_ENVIRONMENT/${cfg_type}-config
+    SUBSYS_DIR=$BASE_DIR/$TURBINE_ENVIRONMENT/${cfg_type}-config
     eval "$(env_exports)"
 
     # Assert subsystem is a BOSH config
@@ -704,9 +704,9 @@ function generate_makefile() {
     done
 
     echo -e "\nVERB?=converge\n"
-    echo -e "all: ${GBE_ENVIRONMENT} cloud-config runtime-config ${subsys_basenames[*]}\n"
+    echo -e "all: ${TURBINE_ENVIRONMENT} cloud-config runtime-config ${subsys_basenames[*]}\n"
 
-    echo -e "${GBE_ENVIRONMENT}:"
+    echo -e "${TURBINE_ENVIRONMENT}:"
     echo -e "\tgbe up\n"
 
     local cfg_type
@@ -805,7 +805,7 @@ function each_subsystem() {
     assert_utilities make "to compute subsys ordering given their dependencies"
 
     local makefile
-    makefile=$(state_dir "$GBE_ENVIRONMENT")/ordering.makefile
+    makefile=$(state_dir "$TURBINE_ENVIRONMENT")/ordering.makefile
     generate_depl_order_makefile > $makefile
 
     local old_IFS=$IFS
@@ -973,7 +973,7 @@ function gbe_up() {
 
     assert_utilities ruby "to render ERB templates locally"
 
-    SUBSYS_DIR=$BASE_DIR/$GBE_ENVIRONMENT
+    SUBSYS_DIR=$BASE_DIR/$TURBINE_ENVIRONMENT
     create_env "$@"
 
     if [[ -f ~/.ssh/known_hosts ]]; then
@@ -1008,13 +1008,13 @@ function create_env() {
 
     set -e
 
-    echo -e "\n${BLUE}Converging$RESET the '${BOLD}${GBE_ENVIRONMENT}${RESET}' environment\n"
+    echo -e "\n${BLUE}Converging$RESET the '${BOLD}${TURBINE_ENVIRONMENT}${RESET}' environment\n"
 
     echo -e "\n${BLUE}Fetching ${BOLD}input resources$RESET\n"
 
     fetch_input_resources
     local env_state_dir subsys_type
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
     mkdir -p "$env_state_dir"
     subsys_type=$(spec_var --required /subsys/type)
     "read_${subsys_type}_spec"
@@ -1056,20 +1056,20 @@ function delete_env() {
     local ignore_errors=no
     if [[ $@ == *--force* ]]; then ignore_errors=yes; fi
 
-    SUBSYS_DIR=$BASE_DIR/$GBE_ENVIRONMENT
+    SUBSYS_DIR=$BASE_DIR/$TURBINE_ENVIRONMENT
 
     # Assert subsystem is a bosh-environment
     assert_subsys bosh-environment
 
     set -e
 
-    echo -e "\n${BLUE}Deleting$RESET the '${BOLD}${GBE_ENVIRONMENT}${RESET}' environment\n"
+    echo -e "\n${BLUE}Deleting$RESET the '${BOLD}${TURBINE_ENVIRONMENT}${RESET}' environment\n"
 
     echo -e "\n${BLUE}Fetching ${BOLD}input resources$RESET\n"
 
     fetch_input_resources
     local subsys_state_dir subsys_type
-    subsys_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    subsys_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
     mkdir -p "$subsys_state_dir"
     subsys_type=$(spec_var --required /subsys/type)
     "read_${subsys_type}_spec"
@@ -1094,7 +1094,7 @@ function delete_env() {
 
 
     if [[ ! -e $subsys_state_dir/env-infra-state.json ]]; then
-        echo -e "\n${BLUE}Skipping ${BOLD}bosh delete-env$RESET, as the 'state/$GBE_ENVIRONMENT/env-infra-state.json' file is absent\n"
+        echo -e "\n${BLUE}Skipping ${BOLD}bosh delete-env$RESET, as the 'state/$TURBINE_ENVIRONMENT/env-infra-state.json' file is absent\n"
     else
         echo -e "\n${BLUE}Running ${BOLD}bosh delete-env$RESET to destroy the BOSH environment\n"
         infra_bosh_rw_invoke delete-env ${ignore_errors:+"--skip-drain"}
@@ -1119,14 +1119,14 @@ function delete_env() {
     post_delete_env_hook
 }
 
-# GBE_ENVIRONMENT=${GBE_ENVIRONMENT:-gcp-env}
-GBE_ENVIRONMENT=${GBE_ENVIRONMENT:-ddbox-env}
+# TURBINE_ENVIRONMENT=${TURBINE_ENVIRONMENT:-gcp-env}
+TURBINE_ENVIRONMENT=${TURBINE_ENVIRONMENT:-ddbox-env}
 
 function load_env_flavor_hooks() {
     setup_bosh_cli >&2
 
     local gbe_env_flavor
-    gbe_env_flavor=$(spec_var --required /infra_vars/iaas "$BASE_DIR/$GBE_ENVIRONMENT")
+    gbe_env_flavor=$(spec_var --required /infra_vars/iaas "$BASE_DIR/$TURBINE_ENVIRONMENT")
 
     source "$BASE_DIR/lib/envs-flavors/$gbe_env_flavor/infra-hooks.inc.bash"
 }
@@ -1173,7 +1173,7 @@ case $1 in
         jumpbox_ip | cat ;;
     bosh-installation)
         assert_utilities jq "to display the BOSH installation path"
-        installation_id=$(jq -r .installation_id "state/$GBE_ENVIRONMENT/env-infra-state.json")
+        installation_id=$(jq -r .installation_id "state/$TURBINE_ENVIRONMENT/env-infra-state.json")
         echo "$HOME/.bosh/installations/$installation_id"
         ;;
     down)
@@ -1221,7 +1221,7 @@ case $1 in
         ssh_jumpbox "$@"
         ;;
     makefile)
-        generate_makefile > $(state_dir "$GBE_ENVIRONMENT")/Makefile
+        generate_makefile > $(state_dir "$TURBINE_ENVIRONMENT")/Makefile
         ;;
     update)
         shift

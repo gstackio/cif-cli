@@ -24,7 +24,7 @@ function state_var() {
 
 function runtime_config_var() {
     local path=$1
-    bosh int "${BASE_DIR}/${GBE_ENVIRONMENT}/runtime-config/conf/spec.yml" \
+    bosh int "${BASE_DIR}/${TURBINE_ENVIRONMENT}/runtime-config/conf/spec.yml" \
         --path "/config_vars${path}"
 }
 

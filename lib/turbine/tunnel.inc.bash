@@ -1,7 +1,7 @@
 
 function jumpbox_key() {
     local env_state_dir
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
 
     restrict_permissions "$env_state_dir/jumpbox.key"
     bosh int "$env_state_dir/depl-creds.yml" --path /jumpbox_ssh/private_key \
@@ -14,7 +14,7 @@ function jumpbox_ip() {
 
 function ssh_jumpbox() {
     local env_state_dir
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
 
     if [[ ! -f $env_state_dir/depl-creds.yml ]]; then
         fatal "${RED}ERROR:$RESET the base BOSH environment is not created yet." \
@@ -59,7 +59,7 @@ TUNNEL_PORT=5000
 
 function has_tunnel() {
     local env_state_dir pid_file
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
     pid_file=$env_state_dir/ssh-tunnel.pid
     [[ -s $pid_file ]] && ps -p "$( < "$pid_file" )" > /dev/null
 }
@@ -72,7 +72,7 @@ function open_tunnel() {
     local local_port=$1
 
     local env_state_dir pid_file
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
     pid_file=$env_state_dir/ssh-tunnel.pid
     if has_tunnel; then
         return 0
@@ -95,7 +95,7 @@ function open_tunnel() {
 }
 
 function start_tunnel() {
-    local pid_file=$(state_dir "$GBE_ENVIRONMENT")/ssh-tunnel.pid
+    local pid_file=$(state_dir "$TURBINE_ENVIRONMENT")/ssh-tunnel.pid
     if has_tunnel; then
         echo -e "\n${BLUE}SSH tunnel is ${BOLD}already running$RESET on PID '$( < "$pid_file" )'" \
              "(more info with ${UNDERLINE}lsof -i :$local_port$RESET)\n"
@@ -111,7 +111,7 @@ function start_tunnel() {
 
 function tunnel_status() {
     local env_state_dir pid_file
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
     pid_file=$env_state_dir/ssh-tunnel.pid
     if ! has_tunnel; then
         echo -e "\nSSH tunnel is $RED${BOLD}not running$RESET\n"
@@ -125,7 +125,7 @@ function tunnel_status() {
 
 function tunnel_logs() {
     local env_state_dir pid_file
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
 
     echo -e "${BOLD}Last logs:$RESET"
     tail "$env_state_dir/ssh-tunnel.log"
@@ -133,7 +133,7 @@ function tunnel_logs() {
 
 function stop_tunnel() {
     local env_state_dir pid_file
-    env_state_dir=$(state_dir "$GBE_ENVIRONMENT")
+    env_state_dir=$(state_dir "$TURBINE_ENVIRONMENT")
     pid_file=$env_state_dir/ssh-tunnel.pid
 
     if has_tunnel; then

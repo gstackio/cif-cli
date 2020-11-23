@@ -15,7 +15,7 @@ function reachable_ip_hook() {
 function pre_create_env_hook() {
     echo -e "\n${BLUE}Running ${BOLD}bbl up$RESET to create infrastructure for the BOSH environment\n"
 
-    local bbl_state_file=$(state_dir "$GBE_ENVIRONMENT")/bbl-state.json
+    local bbl_state_file=$(state_dir "$TURBINE_ENVIRONMENT")/bbl-state.json
     if [[ -f "$bbl_state_file" && ! -s "$bbl_state_file" ]]; then
         # State file might exist and be empty, in which case we must delete it
         # here as a safeguard
@@ -30,7 +30,7 @@ function pre_create_env_hook() {
         --iaas "$iaas" \
         --gcp-region "$region" \
         --gcp-zone "$zone" \
-        --gcp-service-account-key "$BASE_DIR/$GBE_ENVIRONMENT/conf/gcp-service-account.key.json" \
+        --gcp-service-account-key "$BASE_DIR/$TURBINE_ENVIRONMENT/conf/gcp-service-account.key.json" \
         --gcp-project-id "$project_id" \
         --no-director
 
@@ -39,7 +39,7 @@ function pre_create_env_hook() {
     # invoking `bbl up`.
     restrict_permissions \
         "$bbl_state_file" \
-        "$(state_dir "$GBE_ENVIRONMENT")/depl-creds.yml"
+        "$(state_dir "$TURBINE_ENVIRONMENT")/depl-creds.yml"
 
 
     # Proxy must not interfere when (re)creating the Bosh environment
@@ -106,7 +106,7 @@ function pre_delete_env_hook() {
 function post_delete_env_hook() {
     if [[ x$1 == x-k ]]; then
         echo -e "\n${BLUE}Skipping ${BOLD}bbl destroy$RESET, as per user request\n"
-    elif [[ ! -e $(state_dir "$GBE_ENVIRONMENT")/bbl-state.json ]]; then
+    elif [[ ! -e $(state_dir "$TURBINE_ENVIRONMENT")/bbl-state.json ]]; then
         echo -e "\n${BLUE}Skipping ${BOLD}bbl destroy$RESET, as the 'state/bbl-state.json' file is absent\n"
     else
         echo -e "\n${BLUE}Running ${BOLD}bbl destroy$RESET to destroy infrastructure for the BOSH environment\n"

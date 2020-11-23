@@ -2,7 +2,7 @@
 
 ## Bootstrap a new GBE environment:
 
-- `$GBE_ENVIRONMENT` is the environment variable used to designate the GBE
+- `$TURBINE_ENVIRONMENT` is the environment variable used to designate the GBE
   environment that GBE should work with. Such an environment is made of a
   `bosh-environment`subsystem and its related `bosh-config`s subsystems for
   the cloud config and runtime config.

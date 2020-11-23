@@ -1,6 +1,6 @@
 
 function bbl_invoke() {
-    bbl --state-dir "$(state_dir "$GBE_ENVIRONMENT")" "$@"
+    bbl --state-dir "$(state_dir "$TURBINE_ENVIRONMENT")" "$@"
 }
 
 # Synopsis:
@@ -410,11 +410,11 @@ function get_subsys_dir_from_subsys_name() {
 
     local subsys_dir
     if [[ $subsys_name == base-env ]]; then
-        subsys_dir=$BASE_DIR/$GBE_ENVIRONMENT
+        subsys_dir=$BASE_DIR/$TURBINE_ENVIRONMENT
     elif [[ $subsys_name == *-env || $subsys_name == dns ]]; then
         subsys_dir=$BASE_DIR/$subsys_name
     elif [[ $subsys_name == cloud-config || $subsys_name == runtime-config ]]; then
-        subsys_dir=$BASE_DIR/$GBE_ENVIRONMENT/$subsys_name
+        subsys_dir=$BASE_DIR/$TURBINE_ENVIRONMENT/$subsys_name
     else
         subsys_dir=$BASE_DIR/deployments/$subsys_name
     fi
@@ -428,7 +428,7 @@ function imports_from() {
     local subsys_dir vars_count var_idx var_path import_from
     subsys_dir=$(get_subsys_dir_from_subsys_name "$subsys_name")
     if [[ "$subsys_name" == base-env ]]; then
-        subsys_name=$GBE_ENVIRONMENT
+        subsys_name=$TURBINE_ENVIRONMENT
     fi
 
     vars_count=$(spec_var "$base_path" | awk '/^-/{print $1}' \
@@ -609,8 +609,8 @@ function infra_bosh_rw_invoke() {
     # instead of in 'infra_bosh_ro_invoke()'
     infra_bosh_ro_invoke "$verb" \
         --vars-file <(extern_infra_vars_hook) \
-        --vars-store "$(state_dir "$GBE_ENVIRONMENT")/depl-creds.yml" \
-        --state "$(state_dir "$GBE_ENVIRONMENT")/env-infra-state.json" \
+        --vars-store "$(state_dir "$TURBINE_ENVIRONMENT")/depl-creds.yml" \
+        --state "$(state_dir "$TURBINE_ENVIRONMENT")/env-infra-state.json" \
         "$@"
 }
 
