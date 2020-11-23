@@ -128,7 +128,7 @@ function turbine_subsys_add() {
         subsys_type="bosh-deployment"
         differentiator="deployment"
         default_config_vars="
-  deployment_name: easyfoundry-${subsys_name}
+  deployment_name: ${subsys_name}
 
 
   # Versions
