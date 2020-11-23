@@ -91,14 +91,16 @@ EOF
     fi
     ln -sfn "../.cache/turbine-cli/bin/infra" "${BASE_DIR}/bin/"
     ln -sfn "../.cache/turbine-cli/bin/turbine" "${BASE_DIR}/bin/"
+    ln -sfn "../.cache/turbine-cli/lib/turbine" "${BASE_DIR}/lib/"
     if [[ ! -f "${BASE_DIR}/versions.yml" ]]; then
         echo "---" > "${BASE_DIR}/versions.yml"
     fi
-    yq write "${BASE_DIR}/versions.yml" "turbine-cli" "master"
+    yq write "${BASE_DIR}/versions.yml" "turbine-cli" "master" \
+        > "${BASE_DIR}/versions.yml"
 
     local turbine_environment="${infra_name}-env"
     turbine_subsys_add "${turbine_environment}" "."
-    cat >> "${BASE_DIR}/.envrc" <<EOF
+    cat > "${BASE_DIR}/.envrc" <<EOF
 PATH_add bin
 
 export TURBINE_ENVIRONMENT="${turbine_environment}"
