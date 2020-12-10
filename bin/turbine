@@ -91,6 +91,9 @@ EOF
     fi
     ln -sfn "../.cache/turbine-cli/bin/infra" "${BASE_DIR}/bin/"
     ln -sfn "../.cache/turbine-cli/bin/turbine" "${BASE_DIR}/bin/"
+    ln -sfn "../.cache/turbine-cli/bin/check-certs-expiry.sh" "${BASE_DIR}/bin/"
+    ln -sfn "../.cache/turbine-cli/lib/envs-flavors" "${BASE_DIR}/lib/"
+    ln -sfn "../.cache/turbine-cli/lib/hooks-api" "${BASE_DIR}/lib/"
     ln -sfn "../.cache/turbine-cli/lib/turbine" "${BASE_DIR}/lib/"
     if [[ ! -f "${BASE_DIR}/versions.yml" ]]; then
         echo "---" > "${BASE_DIR}/versions.yml"
