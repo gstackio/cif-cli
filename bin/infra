@@ -297,9 +297,9 @@ function ssh_usage() {
     echo "environment, or run a one-off command through an SSH connection."
     echo
     echo "Examples:"
-    echo "  $ gbe ssh"
-    echo "  $ gbe ssh df -h /var/vcap/store"
-    echo "  $ TURBINE_ENVIRONMENT=ddbox-standalone-garden-env gbe ssh df -h"
+    echo "  $ ${SCRIPT_NAME} ssh"
+    echo "  $ ${SCRIPT_NAME} ssh df -h /var/vcap/store"
+    echo "  $ TURBINE_ENVIRONMENT=ddbox-standalone-garden-env ${SCRIPT_NAME} ssh df -h"
     echo
 }
 
@@ -317,7 +317,7 @@ function tunnel_usage() {
     echo "the BOSH director, and keep it away from being exposed to the entire"
     echo "Internet, protected behind firewall rules."
     echo
-    echo "Environment variables might then need to be be refreshed. Run ${ul}gbe env$noul"
+    echo "Environment variables might then need to be be refreshed. Run ${ul}${SCRIPT_NAME} env$noul"
     echo "for more details."
     echo
 }
@@ -361,7 +361,7 @@ function converge_usage() {
     echo "and all subsystems will be converged."
     echo
     echo "When specifying ${b}list$rst, the list of subsystems to converge is"
-    echo "displayed, in the order ${b}gbe converge all$rst would treat them."
+    echo "displayed, in the order ${b}${SCRIPT_NAME} converge all$rst would treat them."
     echo
     echo "    -y"
     echo "        Run unattended. Don't ask for user input."
@@ -440,7 +440,7 @@ function delete_usage() {
     echo "for any user input."
     echo
     echo "When specifying ${b}list$rst, the list of subsystems to delete is"
-    echo "displayed, in the order ${b}gbe delete all$rst would treat them."
+    echo "displayed, in the order ${b}${SCRIPT_NAME} delete all$rst would treat them."
     echo
     echo "    -y"
     echo "        Run unattended. Don't ask for user input. NOT RECOMMENDED."
@@ -707,12 +707,12 @@ function generate_makefile() {
     echo -e "all: ${TURBINE_ENVIRONMENT} cloud-config runtime-config ${subsys_basenames[*]}\n"
 
     echo -e "${TURBINE_ENVIRONMENT}:"
-    echo -e "\tgbe up\n"
+    echo -e "\t${SCRIPT_NAME} up\n"
 
     local cfg_type
     for cfg_type in cloud runtime; do
         echo -e "${cfg_type}-config:"
-        echo -e "\tgbe update -y \$@\n"
+        echo -e "\t${SCRIPT_NAME} update -y \$@\n"
     done
 
     local subsys_basename subsys_name \
@@ -912,7 +912,7 @@ function converge_subsystem() {
         run_hook "$SUBSYS_DIR/pre-deploy.sh"
     fi
 
-    if [[ ${GBE_DEBUG_LEVEL} -ge 2 ]]; then
+    if [[ ${TURBINE_DEBUG_LEVEL} -ge 2 ]]; then
         set -- "$@" --no-redact
     fi
     bosh_rw_invoke deploy "$@"
@@ -963,7 +963,7 @@ function external_ip() {
     external_ip_hook
 }
 
-function gbe_up() {
+function infra_up() {
     setup_bbl
     setup_terraform
     setup_bosh_cli
@@ -1040,9 +1040,9 @@ function create_env() {
             > "$env_state_dir/depl-manifest-humanized.yml" \
             || true
 
-    if [[ ${GBE_DEBUG_LEVEL} -ge 3 ]]; then
+    if [[ ${TURBINE_DEBUG_LEVEL} -ge 3 ]]; then
         # This is just an example of how we can have verbose logs using the
-        # GBE_DEBUG_LEVEL environment variable.
+        # TURBINE_DEBUG_LEVEL environment variable.
         export BOSH_LOG_LEVEL="DEBUG"
         export BOSH_LOG_PATH="${env_state_dir}/bosh-create-env.log"
     fi
@@ -1125,10 +1125,10 @@ TURBINE_ENVIRONMENT=${TURBINE_ENVIRONMENT:-ddbox-env}
 function load_env_flavor_hooks() {
     setup_bosh_cli >&2
 
-    local gbe_env_flavor
-    gbe_env_flavor=$(spec_var --required /infra_vars/iaas "$BASE_DIR/$TURBINE_ENVIRONMENT")
+    local turbine_env_flavor
+    turbine_env_flavor=$(spec_var --required /infra_vars/iaas "$BASE_DIR/$TURBINE_ENVIRONMENT")
 
-    source "$BASE_DIR/lib/envs-flavors/$gbe_env_flavor/infra-hooks.inc.bash"
+    source "$BASE_DIR/lib/envs-flavors/$turbine_env_flavor/infra-hooks.inc.bash"
 }
 load_env_flavor_hooks
 
@@ -1165,7 +1165,7 @@ case $1 in
             esac
             shift
         done
-        gbe_up ${do_recreate:+"--recreate"}
+        infra_up ${do_recreate:+"--recreate"}
         ;;
     alias)
         alias_env ;;
@@ -1247,7 +1247,7 @@ case $1 in
     converge)
         shift
         if [[ -z $1 ]]; then
-            gbe_up
+            infra_up
         else
             non_interactive=
             manifest_only=
