@@ -104,8 +104,10 @@ EOF
     if [[ ! -f "${BASE_DIR}/versions.yml" ]]; then
         echo "---" > "${BASE_DIR}/versions.yml"
     fi
-    yq write "${BASE_DIR}/versions.yml" "turbine-cli" "master" \
-        > "${BASE_DIR}/versions.yml"
+    if which "yq" > /dev/null; then
+        yq write "${BASE_DIR}/.turbine.yml" "turbine-cli-version" "master" \
+            > "${BASE_DIR}/.turbine.yml"
+    fi
 
     local turbine_environment="${infra_name}-env"
     turbine_subsys_add "${turbine_environment}" "."
