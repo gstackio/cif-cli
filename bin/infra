@@ -970,6 +970,7 @@ function infra_up() {
     setup_spruce
     setup_dnscontrol
     setup_cf_cli
+    setup_humanize_manifest
 
     assert_utilities ruby "to render ERB templates locally"
 
