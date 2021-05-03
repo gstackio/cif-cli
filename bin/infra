@@ -1133,18 +1133,19 @@ function load_env_flavor_hooks() {
 load_env_flavor_hooks
 
 case $1 in
-    env)        env_exports ;;
-    bbl)        setup_bbl ;;
-    terraform)  setup_terraform ;;
-    bosh)       setup_bosh_cli ;;
-    spruce)     setup_spruce ;;
-    dnscontrol) setup_dnscontrol ;;
+    env)               env_exports ;;
+    bbl)               setup_bbl ;;
+    terraform)         setup_terraform ;;
+    bosh)              setup_bosh_cli ;;
+    spruce)            setup_spruce ;;
+    dnscontrol)        setup_dnscontrol ;;
     credhub)
         setup_credhub_cli
         ensure_reachability
         credhub_login
         ;;
-    cf)         setup_cf_cli ;;
+    cf)                setup_cf_cli ;;
+    humanize-manifest) setup_humanize_manifest ;;
     gcp)
         shift
         if [[ $1 == "-h" ]]; then

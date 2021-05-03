@@ -30,15 +30,18 @@ DNSCONTROL_VERSION=2.11
 DNSCONTROL_ACCEPTED_VERSIONS='^2\.11.*'
 CF_CLI_VERSION=6.53.0
 CF_CLI_ACCEPTED_VERSIONS='^6\.53\..*'
+HUMANIZE_MANIFEST_VERSION=2.1.0
+HUMANIZE_MANIFEST_ACCEPTED_VERSIONS='^2\.1\..*'
 
 readonly \
-    BBL_VERSION         BBL_ACCEPTED_VERSIONS \
-    TERRAFORM_VERSION   TERRAFORM_ACCEPTED_VERSIONS \
-    BOSH_CLI_VERSION    BOSH_CLI_ACCEPTED_VERSIONS \
-    SPRUCE_VERSION      SPRUCE_ACCEPTED_VERSIONS \
-    CREDHUB_CLI_VERSION CREDHUB_CLI_ACCEPTED_VERSIONS \
-    DNSCONTROL_VERSION  DNSCONTROL_ACCEPTED_VERSIONS \
-    CF_CLI_VERSION      CF_CLI_ACCEPTED_VERSIONS
+    BBL_VERSION               BBL_ACCEPTED_VERSIONS \
+    TERRAFORM_VERSION         TERRAFORM_ACCEPTED_VERSIONS \
+    BOSH_CLI_VERSION          BOSH_CLI_ACCEPTED_VERSIONS \
+    SPRUCE_VERSION            SPRUCE_ACCEPTED_VERSIONS \
+    CREDHUB_CLI_VERSION       CREDHUB_CLI_ACCEPTED_VERSIONS \
+    DNSCONTROL_VERSION        DNSCONTROL_ACCEPTED_VERSIONS \
+    CF_CLI_VERSION            CF_CLI_ACCEPTED_VERSIONS \
+    HUMANIZE_MANIFEST_VERSION HUMANIZE_MANIFEST_ACCEPTED_VERSIONS
 
 function setup_bbl() {
     local bbl_version=${1:-$BBL_VERSION}
@@ -275,4 +278,28 @@ function setup_cf_cli() {
         chmod +x "$cf_cli_bin"
     popd
     rm -rf "$temp_dir"
+}
+
+function setup_humanize_manifest() {
+    local humanize_manifest_version=${1:-"${HUMANIZE_MANIFEST_VERSION}"}
+
+    if which "humanize-manifest" > /dev/null 2>&1; then
+        local existing_humanize_manifest_version
+        existing_humanize_manifest_version=$(humanize-manifest -v | head -n 1 | cut -d' ' -f2 | sed -e 's/^v//')
+        if [[ ${existing_humanize_manifest_version} =~ ${HUMANIZE_MANIFEST_ACCEPTED_VERSIONS} ]]; then
+            return 0
+        fi
+    fi
+
+    local humanize_manifest_bin=${BASE_DIR}/bin/humanize-manifest
+    if [[ -f ${humanize_manifest_bin} ]]; then
+        return 0
+    fi
+
+    assert_utilities curl "to install the Humanize-Manifest CLI"
+
+    echo -e "${BLUE}Installing ${BOLD}Humanize-Manifest CLI${RESET} v${humanize_manifest_version} as: ${humanize_manifest_bin}"
+    curl -sL "https://github.com/cloudfoundry-community/humanize-manifest/releases/download/v${humanize_manifest_version}/humanize-manifest-$(platform)-amd64" \
+        -o "$humanize_manifest_bin"
+    chmod +x "$humanize_manifest_bin"
 }
