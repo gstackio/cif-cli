@@ -177,8 +177,8 @@ chapter of the documentation.
 Documentation
 -------------
 
-The `infra` CLI provides inline help with `infra help`. And generally, help on a
-given command can be obtained with `infra <command> -h`.
+The `infra` CLI provides inline help with `infra help`. And generally, help on
+a given command can be obtained with `infra <command> -h`.
 
 Other documentations are available in the [docs](./docs/) directory:
 
@@ -199,10 +199,11 @@ Please feel free to submit issues and pull requests.
 Author and License
 ------------------
 
-Copyright © 2017-2018, Benjamin Gandon, Gstack
+Copyright © 2017-present, Benjamin Gandon, Gstack
 
-Like the rest of BOSH, the Gstack BOSH environment is released under the terms
-of the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
+Like the rest of BOSH, the Turbine framework and Turbbine infra CLI are
+released under the terms of the
+[Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
 
 <!--
 # Local Variables:
