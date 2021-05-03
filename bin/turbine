@@ -5,7 +5,7 @@ set -o pipefail
 BASE_DIR=$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")
 SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
 
-source "$BASE_DIR/lib/turbine/colors.inc.bash"
+source "${BASE_DIR}/lib/turbine/colors.inc.bash"
 
 function main() {
     case "$1" in
@@ -19,7 +19,11 @@ function main() {
             esac
             ;;
         bump)
-            echo "Not yet implemented" >&2
+            shift
+            case $1 in
+                -h) bump_usage; return 0 ;;
+                *)  turbine_bump "$@" ;;
+            esac
             ;;
         subsys)
             shift
@@ -62,6 +66,15 @@ function init_usage() {
     echo "Initialize a new Turbine project directory."
 }
 
+function bump_usage() {
+    local ul="${UNDERLINE}"
+    local noul="${NOUNDERLINE}"
+    echo "Usage:"
+    echo "  ${ul}${SCRIPT_NAME}${noul}  ${ul}bump${noul}"
+    echo
+    echo "Bumps the Turbine CLI dependency to the latest 'master' version."
+}
+
 function subsys_usage() {
     local ul="${UNDERLINE}"
     local noul="${NOUNDERLINE}"
@@ -81,14 +94,7 @@ function turbine_init() {
     git init "${BASE_DIR}"
     cat >> "${BASE_DIR}/.gitignore" <<EOF
 EOF
-    if [[ -d "${BASE_DIR}/.cache/turbine-cli" ]]; then
-        pushd "${BASE_DIR}/.cache/turbine-cli" > /dev/null
-        git pull
-        popd > /dev/null
-    else
-        git clone "https://github.com/gstackio/turbine-cli.git" \
-            "${BASE_DIR}/.cache/turbine-cli"
-    fi
+    turbine_bump
     ln -sfn "../.cache/turbine-cli/bin/infra" "${BASE_DIR}/bin/"
     ln -sfn "../.cache/turbine-cli/bin/turbine" "${BASE_DIR}/bin/"
     ln -sfn "../.cache/turbine-cli/bin/check-certs-expiry.sh" "${BASE_DIR}/bin/"
@@ -110,6 +116,17 @@ export TURBINE_ENVIRONMENT="${turbine_environment}"
 EOF
     turbine_subsys_add "cloud-config" "${turbine_environment}"
     turbine_subsys_add "runtime-config" "${turbine_environment}"
+}
+
+function turbine_bump() {
+    if [[ -d "${BASE_DIR}/.cache/turbine-cli" ]]; then
+        pushd "${BASE_DIR}/.cache/turbine-cli" > /dev/null
+            git pull
+        popd > /dev/null
+    else
+        git clone "https://github.com/gstackio/turbine-cli.git" \
+            "${BASE_DIR}/.cache/turbine-cli"
+    fi
 }
 
 function turbine_subsys_add() {
