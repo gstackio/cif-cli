@@ -6,6 +6,11 @@ function cf_file_var() {
     bosh int "${SUBSYS_DIR}/../cf/conf/${file}.yml" --path "${path}"
 }
 
+function cf_state_var() {
+    local file=$1 path=$2
+    bosh int "${BASE_DIR}/state/cf/${file}.yml" --path "${path}"
+}
+
 function cf_manif_var() {
     cf_state_var "depl-manifest" "$1"
 }
