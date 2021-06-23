@@ -201,7 +201,7 @@ Author and License
 
 Copyright © 2017-present, Benjamin Gandon, Gstack
 
-Like the rest of BOSH, the Turbine framework and Turbbine infra CLI are
+Like the rest of BOSH, the Turbine framework and Turbine infra CLI are
 released under the terms of the
 [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
 
