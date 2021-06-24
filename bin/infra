@@ -178,7 +178,7 @@ function setup_gcp() {
 function usage() {
     echo "${project_desc}"
     echo "  $BOLD${MAGENTA}SETUP:$RESET"
-    echo "  env         Sourceable envrionment variables for CLI clients"
+    echo "  env         Sourceable environment variables for CLI clients"
     echo "  gcp         Configures the Google Cloud credentials"
     echo "  firewall    Configures the Google Cloud firewall rules"
     echo "  tunnel      Creates a SSH tunnel to the BOSH director, acting as a SOCKS5 proxy"
