@@ -379,6 +379,10 @@ function converge_usage() {
     echo "        When converging 'all' subsystems, first upload any compiled"
     echo "        releases from the local cache to the BOSH Director."
     echo
+    echo "    --fix"
+    echo "        Recreate any instances with unresponsive agents instead of"
+    echo "        erroring."
+    echo
 }
 
 function recreate_usage() {
@@ -1256,6 +1260,7 @@ case $1 in
             dry_run=
             offline=
             compiled=
+            fix_unresponsive_agents=
             while [[ -n $1 ]]; do
                 case $1 in
                     -h)         converge_usage; exit 0 ;;
@@ -1264,6 +1269,7 @@ case $1 in
                     --dry-run)  dry_run=yes ;;
                     --offline)  offline=yes ;;
                     --compiled) compiled=yes ;;
+                    --fix)      fix_unresponsive_agents=yes ;;
                     list)
                         list_subsystems
                         break ;;
@@ -1284,6 +1290,7 @@ case $1 in
                         ensure_reachability
                         converge_subsystem "$1" \
                             ${non_interactive:+"-n"} \
+                            ${fix_unresponsive_agents:+"--fix"} \
                             ${manifest_only:+"--manifest"} \
                             ${dry_run:+"--dry-run"} \
                             ${offline:+"--offline"} ;;
