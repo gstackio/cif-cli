@@ -14,7 +14,7 @@ function main() {
         init)
             shift
             case $1 in
-                -h) init_usage; return 0 ;;
+                -h|"") init_usage; return 0 ;;
                 *)  turbine_init "$@" ;;
             esac
             ;;
