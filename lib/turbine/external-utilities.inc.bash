@@ -18,6 +18,8 @@ function assert_utilities() {
 
 BBL_VERSION=3.2.6
 BBL_ACCEPTED_VERSIONS='^3\.2\..*'
+BBR_VERSION=1.9.26
+BBR_ACCEPTED_VERSIONS='^1\.9\..*'
 TERRAFORM_VERSION=0.9.11
 TERRAFORM_ACCEPTED_VERSIONS='^v0\.9\..*'
 BOSH_CLI_VERSION=6.4.8
@@ -35,6 +37,7 @@ HUMANIZE_MANIFEST_ACCEPTED_VERSIONS='^2\.1\..*'
 
 readonly \
     BBL_VERSION               BBL_ACCEPTED_VERSIONS \
+    BBR_VERSION               BBR_ACCEPTED_VERSIONS \
     TERRAFORM_VERSION         TERRAFORM_ACCEPTED_VERSIONS \
     BOSH_CLI_VERSION          BOSH_CLI_ACCEPTED_VERSIONS \
     SPRUCE_VERSION            SPRUCE_ACCEPTED_VERSIONS \
@@ -77,6 +80,42 @@ function setup_bbl() {
 
     curl -sL -o "$bbl_bin" "$url"
     chmod +x "$bbl_bin"
+}
+
+function setup_bbr() {
+    local bbr_version=${1:-$BBR_VERSION}
+
+    local existing_bbr_version
+    if which bbr > /dev/null 2>&1; then
+        existing_bbr_version=$(bbr --version | head -n 1 | cut -d' ' -f2)
+        if [[ $existing_bbr_version =~ $BBR_ACCEPTED_VERSIONS ]]; then
+            return 0
+        fi
+    fi
+
+    local bbr_bin=$BASE_DIR/bin/bbr
+    if [[ -f $bbr_bin ]]; then
+        existing_bbr_version=$("$bbr_bin" --version | head -n 1 | cut -d' ' -f2)
+        if [[ $existing_bbr_version =~ $BBR_ACCEPTED_VERSIONS ]]; then
+            return 0
+        fi
+    fi
+
+    assert_utilities curl "to install the BOSH Backup and Restore CLI"
+
+    local bbr_repo=https://github.com/cloudfoundry/bosh-backup-and-restore
+    local linux_bin=bbr-${bbr_version}-linux-amd64
+    local darwin_bin=bbr-${bbr_version}-darwin-amd64
+
+    echo -e "\n${BLUE}Installing ${BOLD}BOSH Backup and Restore CLI$RESET v$bbr_version as: $bbr_bin\n"
+    local url
+    case $(platform) in
+        darwin) url=$bbr_repo/releases/download/v$bbr_version/$darwin_bin;;
+        linux)  url=$bbr_repo/releases/download/v$bbr_version/$linux_bin;;
+    esac
+
+    curl -sL -o "$bbr_bin" "$url"
+    chmod +x "$bbr_bin"
 }
 
 function setup_terraform() {

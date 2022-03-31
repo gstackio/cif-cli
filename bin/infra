@@ -1140,6 +1140,7 @@ load_env_flavor_hooks
 case $1 in
     env)               env_exports ;;
     bbl)               setup_bbl ;;
+    bbr)               setup_bbr ;;
     terraform)         setup_terraform ;;
     bosh)              setup_bosh_cli ;;
     spruce)            setup_spruce ;;
