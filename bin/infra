@@ -86,16 +86,15 @@ function env_exports() {
     }
 
     env_exports_hook
-    local ca_cert admin_password jumpbox_private_key env_alias depl_name
+    local ca_cert admin_password jumpbox_private_key depl_name
     ca_cert=$(env_creds_var /default_ca/ca)
     admin_password=$(env_creds_var /admin_password)
     jumpbox_private_key=$(state_dir "$TURBINE_ENVIRONMENT")/jumpbox.key
-    env_alias=$(spec_var --required /infra_vars/alias "$BASE_DIR/$TURBINE_ENVIRONMENT")
     echo "export BOSH_CA_CERT=\"$ca_cert\""
     echo "export BOSH_CLIENT=admin"
     echo "export BOSH_CLIENT_SECRET=\"$admin_password\""
     echo "export BOSH_GW_PRIVATE_KEY=\"$jumpbox_private_key\""
-    echo "export BOSH_ENVIRONMENT=\"$env_alias\""
+    echo "export BOSH_ENVIRONMENT=\"$(internal_ip)\""
 
     # We set $BOSH_DEPLOYMENT only in case no $SUBSYS_DIR is already defined
     if [[ -n $SUBSYS_DIR ]]; then
@@ -1000,10 +999,13 @@ function infra_up() {
 }
 
 function alias_env() {
-    eval "$(env_exports)"
-    echo -e "\n${BLUE}Aliasing the created BOSH environment to ${BOLD}'$BOSH_ENVIRONMENT'$RESET\n"
+    local env_alias
+    env_alias=$(spec_var --required /infra_vars/alias "${BASE_DIR}/${TURBINE_ENVIRONMENT}")
 
-    bosh -e "$(internal_ip)" alias-env "$BOSH_ENVIRONMENT"
+    eval "$(env_exports)"
+    echo -e "\n${BLUE}Aliasing the created BOSH environment to ${BOLD}'${env_alias}'${RESET}\n"
+
+    bosh -e "$(internal_ip)" alias-env "${env_alias}"
 }
 
 function create_env() {
