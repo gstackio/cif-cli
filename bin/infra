@@ -1356,10 +1356,6 @@ case $1 in
                     subsys_name=$1
                     SUBSYS_DIR=$(get_subsys_dir_from_subsys_name "${subsys_name}")
 
-                    # shell_opts="$-"
-                    # initial_xtrace=$(tr -Cd "x" <<< "${shell_opts}")
-                    # if [[ -z $initial_xtrace ]]; then set -x; fi
-
                     assert_subsys bosh-deployment
 
                     UPSTREAM_RESOURCES=()
@@ -1386,9 +1382,13 @@ case $1 in
                     deployment_name=$(spec_var --required "/deployment_vars/deployment_name")
                     echo -e "\n${BLUE}Recovering the ${BOLD}'${subsys_name}'${RESET} subsystem.\n"
 
+                    shell_opts="$-"
+                    initial_xtrace=$(tr -Cd "x" <<< "${shell_opts}")
+                    if [[ -z ${initial_xtrace} ]]; then set -x; fi
+
                     bosh cloud-check -d "${deployment_name}" ${non_interactive:+-n --auto --resolution=recreate_vm}
 
-                    # if [[ -z $initial_xtrace ]]; then set +x; fi
+                    if [[ -z ${initial_xtrace} ]]; then set +x; fi
                     ;;
             esac
             shift
