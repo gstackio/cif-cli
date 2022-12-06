@@ -540,9 +540,7 @@ function add_routes() {
     case $platform in
         darwin) "${ssh_cmd[@]}" "${sudo_cmd[@]}" route add -net "$network_cidr"    "$(internal_ip)" ;;
         linux)  "${ssh_cmd[@]}" "${sudo_cmd[@]}" route add -net "$network_cidr" gw "$(internal_ip)" ;;
-        *)
-            echo "${RED}ERROR:$RESET cannot set routes on unsupported platform '$platform'" >&2
-            exit 1 ;;
+        *)      fatal "${RED}ERROR:$RESET cannot set routes on unsupported platform '$platform'" ;;
     esac
 }
 
@@ -1138,6 +1136,27 @@ function load_env_flavor_hooks() {
     source "$BASE_DIR/lib/envs-flavors/$turbine_env_flavor/infra-hooks.inc.bash"
 }
 load_env_flavor_hooks
+
+function assert_bash4() {
+    local current_bash_version  path_bash_version  bash_major_version
+    function extract_version() {
+        head --lines=1 | cut -d" " -f4 | sed -e 's/[^0-9.].*$//'
+    }
+    current_bash_version=$(help | extract_version)
+    path_bash_version=$(bash --version | extract_version)
+    if [[ ${path_bash_version} != ${current_bash_version} ]]; then
+        fatal "${RED}ERROR:${RESET} Bash version of current process (${current_bash_version})" \
+            "is different from Bash version from PATH (${path_bash_version})." \
+            "Please ensure both are the same prior to running ${SCRIPT_NAME}. Aborting."
+    fi
+    bash_major_version=$(cut -d. -f1 <<< "${current_bash_version}")
+    if [[ ${bash_major_version} -lt 4 ]]; then
+        fatal "${RED}ERROR:${RESET} Bash v4 is required at minimum" \
+            "(${current_bash_version} < 4.0.0)." \
+            "Aborting."
+    fi
+}
+assert_bash4
 
 case $1 in
     env)               env_exports ;;
