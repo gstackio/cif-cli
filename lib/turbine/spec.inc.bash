@@ -301,12 +301,12 @@ function import_file_value() {
     var_value=$(spec_var "$base_path/value")
     import_path=$(spec_var "$base_path/path")
     if [[ -z $var_name ]]; then
-        echo "${RED}ERROR:$RESET missing '$base_path/name' YAML node in subsys spec." >&2
+        echo "${RED}ERROR:$RESET missing '$base_path/name' YAML node in spec.yml of subsys '${subsys_name}'." >&2
         return 1
     fi
     if [[ -z $var_value && -z $import_path ]]; then
         echo "${RED}ERROR:$RESET either '$base_path/path' or '$base_path/value' YAML nodes" \
-            "must be specified in subsys spec." >&2
+            "must be specified in spec.yml of subsys '${subsys_name}'." >&2
         return 1
     fi
 
@@ -357,12 +357,12 @@ function import_state_value() {
     var_value_tmpl=$(spec_var "$base_path/value")
     import_path=$(spec_var "$base_path/path")
     if [[ -z $var_name ]]; then
-        echo "${RED}ERROR:$RESET missing '$base_path/name' YAML node in subsys spec." >&2
+        echo "${RED}ERROR:$RESET missing '$base_path/name' YAML node in spec.yml of subsys '${subsys_name}'." >&2
         return 1
     fi
     if [[ -z $var_value_tmpl && -z $import_path ]]; then
         echo "${RED}ERROR:$RESET either '$base_path/path' or '$base_path/value' YAML nodes" \
-            "must be specified in subsys spec." >&2
+            "must be specified in spec.yml of subsys '${subsys_name}'." >&2
         return 1
     fi
 
