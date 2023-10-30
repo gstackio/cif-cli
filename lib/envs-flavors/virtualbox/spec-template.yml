@@ -19,7 +19,7 @@ infra_vars:
   iaas: virtualbox # the GBE environment flavor
 
 dns:
-  zone: prototyp.it
+  zone: example.org
   subdomain: easyfoundry
 
 

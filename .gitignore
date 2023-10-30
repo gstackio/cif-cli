@@ -1,4 +1,5 @@
 /.cache/
+/.mailmap
 /bin/bbl
 /bin/terraform
 /bin/bosh

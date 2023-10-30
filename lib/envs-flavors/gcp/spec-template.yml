@@ -22,7 +22,7 @@ infra_vars:
   project_id: ~ # e.g. 'my-sample-project-191923'
 
 dns:
-  zone: prototyp.it
+  zone: example.org
   subdomain: easyfoundry
 
 
