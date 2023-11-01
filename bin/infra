@@ -895,6 +895,9 @@ function converge_subsystem() {
     "read_${subsys_type}_spec" "$@"
 
     restrict_permissions "$subsys_state_dir/depl-creds.yml"
+
+    run_hook "${SUBSYS_DIR}/pre-interpolate.sh"
+
     bosh_ro_invoke interpolate > "$subsys_state_dir/depl-manifest.yml"
     [[ -x $(which humanize-manifest) ]] && \
         humanize-manifest "$subsys_state_dir/depl-manifest.yml" \
