@@ -2,7 +2,8 @@
 
 set -ueo pipefail
 
-BASE_DIR=${BASE_DIR:-$(git rev-parse --show-toplevel)}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+BASE_DIR=${BASE_DIR:-$(cd "${SCRIPT_DIR}" && git rev-parse --show-toplevel)}
 
 function main() {
     local subsys=$1
@@ -46,8 +47,6 @@ function check_expiry() {
         check_cert "${subsys}" "/${key}/certificate"
         check_cert "${subsys}" "/${key}/ca"
     done
-
-    
 }
 
 function check_cert() {
